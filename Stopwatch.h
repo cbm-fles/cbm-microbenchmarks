@@ -1,54 +1,46 @@
+// 2020-06-18, Jan de Cuveland <cuveland@compeng.uni-frankfurt.de>
+
 #ifndef STOPWATCH_H
 #define STOPWATCH_H
 
-//////////////////////////////////////////////////////////////////////////
-//                                                                      //
-// Stopwatch                                                           //
-//                                                                      //
-// Stopwatch class. This class returns the real and cpu time between    //
-// the start and stop events.                                           //
-//                                                                      //
-//////////////////////////////////////////////////////////////////////////
+/**
+ * Stopwatch
+ *
+ * Stopwatch class. This class returns the real and cpu time between the start
+ * and stop events. Modeled after Root's TStopwatch class.
+ */
 
+#include <chrono>
+#include <ctime>
 #include <stdexcept>
-
-#include <sys/time.h>
-#include <sys/times.h>
-#include <unistd.h>
-
-static double gTicks = 0;
 
 class Stopwatch {
 public:
-  Stopwatch() {
-    if (gTicks <= 0.0)
-      gTicks = static_cast<double>(sysconf(_SC_CLK_TCK));
-
-    Start();
-  }
+  Stopwatch() { Start(); }
 
   void Start(bool reset = true) {
     if (reset) {
       fState = State::undefined;
-      fTotalCpuTime = 0;
       fTotalRealTime = 0;
+      fTotalCpuTime = 0;
       fCounter = 0;
     }
     if (fState != State::running) {
-      fStartRealTime = GetRealTime();
-      fStartCpuTime = GetCPUTime();
+      fStartRealTime = std::chrono::steady_clock::now();
+      fStartCpuTime = std::clock();
     }
     fState = State::running;
     fCounter++;
   }
 
   void Stop() {
-    fStopRealTime = GetRealTime();
-    fStopCpuTime = GetCPUTime();
+    fStopRealTime = std::chrono::steady_clock::now();
+    fStopCpuTime = std::clock();
 
     if (fState == State::running) {
-      fTotalCpuTime += fStopCpuTime - fStartCpuTime;
-      fTotalRealTime += fStopRealTime - fStartRealTime;
+      fTotalRealTime +=
+          std::chrono::duration<double>(fStopRealTime - fStartRealTime).count();
+      fTotalCpuTime += double(fStopCpuTime - fStartCpuTime) / CLOCKS_PER_SEC;
     }
     fState = State::stopped;
   }
@@ -58,8 +50,9 @@ public:
       throw std::runtime_error("stopwatch not started");
 
     if (fState == State::stopped) {
-      fTotalCpuTime -= fStopCpuTime - fStartCpuTime;
-      fTotalRealTime -= fStopRealTime - fStartRealTime;
+      fTotalRealTime -=
+          std::chrono::duration<double>(fStopRealTime - fStartRealTime).count();
+      fTotalCpuTime -= double(fStopCpuTime - fStartCpuTime) / CLOCKS_PER_SEC;
     }
 
     fState = State::running;
@@ -77,21 +70,6 @@ public:
     return fTotalRealTime;
   }
 
-  void Reset() {
-    ResetCpuTime();
-    ResetRealTime();
-  }
-
-  void ResetCpuTime(double time = 0) {
-    Stop();
-    fTotalCpuTime = time;
-  }
-
-  void ResetRealTime(double time = 0) {
-    Stop();
-    fTotalRealTime = time;
-  }
-
   double CpuTime() {
     if (fState == State::undefined)
       throw std::runtime_error("stopwatch not started");
@@ -102,9 +80,24 @@ public:
     return fTotalCpuTime;
   }
 
-  void Print(const char *option = "") const {
-    double realt = const_cast<Stopwatch *>(this)->RealTime();
-    double cput = const_cast<Stopwatch *>(this)->CpuTime();
+  void Reset() {
+    ResetCpuTime();
+    ResetRealTime();
+  }
+
+  void ResetRealTime(double time = 0) {
+    Stop();
+    fTotalRealTime = time;
+  }
+
+  void ResetCpuTime(double time = 0) {
+    Stop();
+    fTotalCpuTime = time;
+  }
+
+  void Print(const char *option = "") {
+    double realt = RealTime();
+    double cput = CpuTime();
 
     int hours = int(realt / 3600);
     realt -= hours * 3600;
@@ -146,26 +139,14 @@ public:
 private:
   enum class State { undefined, stopped, running };
 
-  static double GetRealTime() {
-    struct timeval tp;
-    gettimeofday(&tp, 0);
-    return tp.tv_sec + 1e-6 * tp.tv_usec;
-  }
-
-  static double GetCPUTime() {
-    struct tms cpt;
-    times(&cpt);
-    return static_cast<double>(cpt.tms_utime + cpt.tms_stime) / gTicks;
-  }
-
-  double fStartRealTime;    // wall clock start time
-  double fStopRealTime = 0; // wall clock stop time
-  double fStartCpuTime;     // cpu start time
-  double fStopCpuTime = 0;  // cpu stop time
-  double fTotalCpuTime;     // total cpu time
-  double fTotalRealTime;    // total real time
-  State fState;             // stopwatch state
-  int fCounter;             // number of times the stopwatch was started
+  std::chrono::steady_clock::time_point fStartRealTime; // wall clock start time
+  std::chrono::steady_clock::time_point fStopRealTime;  // wall clock stop time
+  std::clock_t fStartCpuTime;                           // cpu start time
+  std::clock_t fStopCpuTime;                            // cpu stop time
+  double fTotalRealTime;                                // total real time
+  double fTotalCpuTime;                                 // total cpu time
+  State fState;                                         // stopwatch state
+  int fCounter; // number of times the stopwatch was started
 };
 
 #endif
