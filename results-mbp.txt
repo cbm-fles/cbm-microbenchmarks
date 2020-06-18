@@ -1,0 +1,13 @@
+total size in bytes: 8000000000
+return_value:
+Real time 0:00:14.017, CP time 11.463
+return_copy:
+Real time 0:00:13.645, CP time 12.150
+fill_reference:
+Real time 0:00:11.105, CP time 10.182
+append_to_reference:
+Real time 0:00:11.252, CP time 10.241
+forget_reserve:
+Real time 0:00:12.273, CP time 11.945
+append_to_reference_noreserve:
+Real time 0:00:25.000, CP time 21.129
