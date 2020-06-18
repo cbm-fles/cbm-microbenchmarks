@@ -8,9 +8,8 @@
 #include <numeric>
 #include <vector>
 
-// constexpr size_t elements = 1'000'000;
-constexpr size_t elements = 200'000;
-constexpr size_t components = 1000;
+constexpr size_t elements = 1'000'000;
+constexpr size_t components = 1'000;
 
 using TimesliceComponent = std::vector<uint64_t>;
 using Timeslice = std::array<TimesliceComponent, components>;
