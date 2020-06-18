@@ -15,6 +15,7 @@
 #include <sys/time.h>
 #include <sys/times.h>
 #include <unistd.h>
+
 static double gTicks = 0;
 
 class Stopwatch {
@@ -23,11 +24,9 @@ public:
     if (gTicks <= 0.0)
       gTicks = static_cast<double>(sysconf(_SC_CLK_TCK));
 
-    fStopRealTime = 0;
-    fStopCpuTime = 0;
-
     Start();
   }
+
   void Start(bool reset = true) {
     if (reset) {
       fState = State::undefined;
@@ -159,14 +158,14 @@ private:
     return static_cast<double>(cpt.tms_utime + cpt.tms_stime) / gTicks;
   }
 
-  double fStartRealTime; // wall clock start time
-  double fStopRealTime;  // wall clock stop time
-  double fStartCpuTime;  // cpu start time
-  double fStopCpuTime;   // cpu stop time
-  double fTotalCpuTime;  // total cpu time
-  double fTotalRealTime; // total real time
-  State fState;          // stopwatch state
-  int fCounter;          // number of times the stopwatch was started
+  double fStartRealTime;    // wall clock start time
+  double fStopRealTime = 0; // wall clock stop time
+  double fStartCpuTime;     // cpu start time
+  double fStopCpuTime = 0;  // cpu stop time
+  double fTotalCpuTime;     // total cpu time
+  double fTotalRealTime;    // total real time
+  State fState;             // stopwatch state
+  int fCounter;             // number of times the stopwatch was started
 };
 
 #endif
