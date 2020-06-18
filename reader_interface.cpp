@@ -17,12 +17,11 @@ using Digis = std::vector<uint64_t>;
 
 Timeslice create_timeslice() {
   Timeslice ts;
-  for (auto &c : ts) {
-    c.reserve(elements);
-    for (size_t i = 0; i < elements; ++i) {
-      c.emplace_back(i);
-    }
-  }
+  auto create_component = [](TimesliceComponent &c) {
+    c.resize(elements);
+    std::iota(c.begin(), c.end(), 0);
+  };
+  std::for_each(ts.begin(), ts.end(), create_component);
   return ts;
 }
 
