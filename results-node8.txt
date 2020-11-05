@@ -1,0 +1,27 @@
+total size in bytes: 8000000000
+=== RUN MODE 0 ===
+- receive (invent) a new timeslice
+Real time 0:00:00.822, CP time 48.075
+- reserve global digi vector
+Real time 0:00:00.000, CP time 0.000
+- run the reader (create vector, then append)
+Real time 0:00:15.249, CP time 16.258
+Real time 0:00:10.566, CP time 11.323, 1001 slices
+Real time 0:00:04.242, CP time 4.989, 1001 slices
+- sort the digis
+Real time 0:00:03.224, CP time 150.798
+- forward the digis to the analysis
+Real time 0:00:00.227, CP time 7.476
+- analysis result: 1882236160
+=== RUN MODE 1 ===
+- receive (invent) a new timeslice
+Real time 0:00:00.804, CP time 47.780
+- reserve global digi vector
+Real time 0:00:00.000, CP time 0.000
+- run the reader (append directly)
+Real time 0:00:06.707, CP time 7.718
+- sort the digis
+Real time 0:00:03.169, CP time 145.160
+- forward the digis to the analysis
+Real time 0:00:00.227, CP time 7.731
+- analysis result: 1882236160
